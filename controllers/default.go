@@ -35,7 +35,8 @@ func (this *MainController) Get() {
 		for _, info := range tmp {
 			result = append(result, string(info))
 		}
-		beego.Trace("all infos are", result)
+		//beego.Trace("all infos are", result)
+        beego.Trace("info count:", len(result))
 		this.Data["Infos"] = result
 	} else {
 		beego.Error(err)
