@@ -7,6 +7,6 @@ import (
 
 func main() {
 	beego.Router("/", &controllers.MainController{})
-	beego.Info("Jethome started ....")
+	beego.Info("Jethome started ...")
 	beego.Run()
 }

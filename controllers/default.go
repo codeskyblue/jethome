@@ -21,11 +21,12 @@ func (this *MainController) Get() {
 	this.Data["Username"] = "astaxie"
 	this.Data["Email"] = "astaxie@gmail.com"
 	if tmp, err := client.Lrange("report", 0, -1); err == nil {
-		result := make([]string, 0, 10)
+		result := make([]string, 0, 20)
 		for _, info := range tmp {
 			result = append(result, string(info))
 		}
-		beego.Trace("all infos are", result)
+		//beego.Trace("all infos are", result)
+        beego.Trace("info count:", len(result))
 		this.Data["Infos"] = result
 	} else {
 		beego.Error(err)
@@ -39,7 +40,7 @@ func (this *MainController) Post() {
 		beego.Warn("post got no message")
 		this.Ctx.NotFound("no info submit")
 	}
-	beego.Trace("receive post info:", this.Info)
+	//beego.Trace("receive post info:", this.Info)
 	this.Ctx.Redirect(302, "/")
 	this.Data["Username"] = "astaxie"
 	this.Data["Email"] = "astaxie@gmail.com"
