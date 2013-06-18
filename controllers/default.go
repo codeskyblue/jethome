@@ -3,6 +3,7 @@ package controllers
 import (
 	"github.com/astaxie/beego"
 	"github.com/shxsun/redis"
+    "jethome/models"
 )
 
 var client redis.Client
@@ -18,9 +19,18 @@ type MainController struct {
 }
 
 func (this *MainController) Get() {
+    // get proj list from db
+	projs, err := models.ListProject()
+	if err != nil {
+		beego.Error("list proj fail")
+	}
+	this.Data["ProjList"] = projs
+
+    // TODO: get username from session
 	this.Data["Username"] = "astaxie"
 	this.Data["Email"] = "astaxie@gmail.com"
-	if tmp, err := client.Lrange("report", 0, -1); err == nil {
+    // get  leave message
+	if tmp, err := client.Lrange("message", -10, -1); err == nil {
 		result := make([]string, 0, 10)
 		for _, info := range tmp {
 			result = append(result, string(info))
@@ -40,9 +50,9 @@ func (this *MainController) Post() {
 		this.Ctx.NotFound("no info submit")
 	}
 	beego.Trace("receive post info:", this.Info)
-	this.Ctx.Redirect(302, "/")
 	this.Data["Username"] = "astaxie"
 	this.Data["Email"] = "astaxie@gmail.com"
 	this.TplNames = "submit.tpl"
-	client.Lpush("report", []byte(info))
+	client.Lpush("message", []byte(info))
+	this.Ctx.Redirect(302, "/")
 }

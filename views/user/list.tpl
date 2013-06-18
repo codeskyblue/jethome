@@ -7,8 +7,8 @@
     <h1>Jethome</h1>
 	<div>
 		<form method="post">
-			Name: <input type="text" name="name" /><br/>
-			Email: <input type="text" name="email" /><br/>
+			Name: <input type="text" name="name" />中文名<br/>
+			Email: <input type="text" name="email" />@baidu.com<br/>
 			<input type="submit" value="Add" />
 		</form>
 	</div>
