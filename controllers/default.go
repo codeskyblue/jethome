@@ -2,58 +2,64 @@ package controllers
 
 import (
 	"github.com/astaxie/beego"
-	"github.com/shxsun/redis"
     "jethome/models"
 )
 
-var client redis.Client
-
-func init() {
-	client.Addr = "127.0.0.1:6379"
-	client.Db = 0
-}
 
 type MainController struct {
 	beego.Controller
 	Info string
 }
 
-func (this *MainController) Get() {
-    // get proj list from db
-	projs, err := models.ListProject()
-	if err != nil {
-		beego.Error("list proj fail")
-	}
-	this.Data["ProjList"] = projs
+var main = `
+# 周报管理平台
+`
 
-    // TODO: get username from session
-	this.Data["Username"] = "astaxie"
-	this.Data["Email"] = "astaxie@gmail.com"
-    // get  leave message
-	if tmp, err := client.Lrange("message", -10, -1); err == nil {
-		result := make([]string, 0, 10)
-		for _, info := range tmp {
-			result = append(result, string(info))
-		}
-		//beego.Trace("all infos are", result)
-        beego.Trace("info count:", len(result))
-		this.Data["Infos"] = result
-	} else {
-		beego.Error(err)
+var about = `
+### 出现背景
+主要是因为写周报是merge太麻烦，wiki又不给力，所以才出现的这个周报整合平台。
+
+该平台采用go语言的beego框架编写。
+虽说go语言的特性很好，不过开发还是听艰辛的。
+
+贴几张设计图，留个纪念。
+
+![page1](/static/img/draft1.jpg)
+![page2](/static/img/draft2.jpg)
+
+### 更新历史
+**2013-6-17**
+号晚上开始构思。
+
+**2013-6-18**
+出现了第一个demo版。
+
+### 致谢
+感谢astaxie提供了这么好用的beego框架
+
+感谢bootstrap对前端页面的大力支持。
+`
+
+var contact = `
+	ssx205@gmail.com
+`
+
+func (this *MainController) Get() {
+	name := this.Ctx.Params[":name"]
+	beego.Debug("name:", name)
+	content := main
+	switch name {
+	case "about":
+		content = about
+	case "contact":
+		content = contact
 	}
+	projs, _ := models.ListProject()
+	this.Data["ProjList"] = projs
+	this.Data["Content"] = content
+
 	this.TplNames = "index.tpl"
 }
 
 func (this *MainController) Post() {
-	info := this.Input().Get("info")
-	if info == "" {
-		beego.Warn("post got no message")
-		this.Ctx.NotFound("no info submit")
-	}
-	beego.Trace("receive post info:", this.Info)
-	this.Data["Username"] = "astaxie"
-	this.Data["Email"] = "astaxie@gmail.com"
-	this.TplNames = "submit.tpl"
-	client.Lpush("message", []byte(info))
-	this.Ctx.Redirect(302, "/")
 }
