@@ -47,6 +47,7 @@
           <div class="nav-collapse collapse">            
             <ul class="nav">
               <li class="active"><a href="/">首页</a></li>
+              <li><a href="/report">生成周报</a></li>
               <li><a href="/about">关于我们</a></li>
               <li><a href="/contact">联系我们</a></li>
             </ul>
@@ -62,14 +63,30 @@
             <ul class="nav nav-list">
               <li class="nav-header">项目列表</li>
 			{{range .ProjList}}
-				   <li><a href="/p/{{.Name}}">{{.Name}}</a></li>
+                {{if .Cru}}
+				   <li class="active"><a href="/p/{{.PROJ.Name}}">{{.PROJ.Name}}</a></li>
+                {{else}}
+				   <li><a href="/p/{{.PROJ.Name}}">{{.PROJ.Name}}</a></li>
+                {{end}}
 			{{end}}
             </ul>
           </div><!--/.well -->
         </div><!--/span-->
         <div class="span9">
           <div class="hero-unit">
-				{{markdown .Content}}
+            {{if .Project}}
+                <table class="table table-bordered">
+                    <tr>
+                        <td>QA</td>
+                        <td>RD</td>
+                    </tr>
+                    <tr>
+                        <td>{{range .QA}}{{.}} {{end}}</td>
+                        <td>{{range .RD}}{{.}} {{end}}</td>
+                    </tr>
+                </table>
+            {{end}}
+            <div> {{markdown .Content}} </div>
           </div>         
         </div><!--/span-->
       </div><!--/row-->

@@ -20,12 +20,12 @@ var about = `
 主要是因为写周报是merge太麻烦，wiki又不给力，所以才出现的这个周报整合平台。
 
 该平台采用go语言的beego框架编写。
-虽说go语言的特性很好，不过开发还是听艰辛的。
+虽说go语言的特性很好，不过开发还是挺艰辛的。
 
 贴几张设计图，留个纪念。
 
-![page1](/static/img/draft1.jpg)
-![page2](/static/img/draft2.jpg)
+![page1](/static/img/draft/draft1.jpg)
+![page2](/static/img/draft/draft2.jpg)
 
 ### 更新历史
 **2013-6-17**
@@ -45,19 +45,45 @@ var contact = `
 `
 
 func (this *MainController) Get() {
-	name := this.Ctx.Params[":name"]
-	beego.Debug("name:", name)
-	content := main
-	switch name {
-	case "about":
-		content = about
-	case "contact":
-		content = contact
-	}
-	projs, _ := models.ListProject()
-	this.Data["ProjList"] = projs
-	this.Data["Content"] = content
+	name, pname := this.Ctx.Params[":name"], this.Ctx.Params[":pname"]
+    cruproj, _ := models.GetJob(pname, 0, -1)
+    this.Data["CruProj"] = cruproj
+	projlist, _ := models.ListProject()
+    pm := make([]map[string]interface{}, len(projlist))
+    for _, p := range projlist {
+        m := make(map[string]interface{}, 2)
+        m["PROJ"] = p
+        if pname == p.Name {
+            m["Cru"] = true
+        } else {
+            m["Cru"] = false
+        }
+        pm = append(pm, m)
+    }
+	this.Data["ProjList"] = pm
 
+    content := main
+    if name != "" {
+        beego.Debug("name:", name)
+        switch name {
+        case "about":
+            content = about
+        case "contact":
+            content = contact
+        }
+    }
+
+    beego.Debug("proj name:", pname)
+    if pname != "" {
+        job, _ := models.GetJob(pname, 0, -1)
+        content = job.Description
+        this.Data["Project"] = job.Name
+        this.Data["QA"] = job.QA
+        this.Data["RD"] = job.RD
+        this.Data["Type"] = job.Type
+    }
+
+    this.Data["Content"] = content
 	this.TplNames = "index.tpl"
 }
 
