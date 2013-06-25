@@ -2,9 +2,8 @@ package controllers
 
 import (
 	"github.com/astaxie/beego"
-    "jethome/models"
+	"jethome/models"
 )
-
 
 type MainController struct {
 	beego.Controller
@@ -13,6 +12,10 @@ type MainController struct {
 
 var main = `
 # 周报管理平台
+
+--------------------------
+#### REST接口
+>项目查询 Get请求 /api/p/\<project\> 获取任务详情
 `
 
 var about = `
@@ -38,54 +41,51 @@ var about = `
 感谢astaxie提供了这么好用的beego框架
 
 感谢bootstrap对前端页面的大力支持。
-`
 
-var contact = `
-	ssx205@gmail.com
+author: ssx205@gmail.com
 `
 
 func (this *MainController) Get() {
 	name, pname := this.Ctx.Params[":name"], this.Ctx.Params[":pname"]
-    cruproj, _ := models.GetJob(pname, 0, -1)
-    this.Data["CruProj"] = cruproj
+	cruproj, _ := models.GetJob(pname, 0, -1)
+	this.Data["CruProj"] = cruproj
 	projlist, _ := models.ListProject()
-    pm := make([]map[string]interface{}, len(projlist))
-    for _, p := range projlist {
-        m := make(map[string]interface{}, 2)
-        m["PROJ"] = p
-        if pname == p.Name {
-            m["Cru"] = true
-        } else {
-            m["Cru"] = false
-        }
-        pm = append(pm, m)
-    }
+	pm := make([]map[string]interface{}, len(projlist))
+	for _, p := range projlist {
+		m := make(map[string]interface{}, 2)
+		m["PROJ"] = p
+		if pname == p.Name {
+			m["Cru"] = true
+		} else {
+			m["Cru"] = false
+		}
+		pm = append(pm, m)
+	}
 	this.Data["ProjList"] = pm
 
-    content := main
-    if name != "" {
-        beego.Debug("name:", name)
-        switch name {
-        case "about":
-            content = about
-        case "contact":
-            content = contact
-        }
-    }
+	content := main
+	if name != "" {
+		beego.Debug("name:", name)
+		switch name {
+		case "about":
+			content = about
+		}
+	}
 
-    beego.Debug("proj name:", pname)
-    if pname != "" {
-        job, _ := models.GetJob(pname, 0, -1)
-        content = job.Description
-        this.Data["Project"] = job.Name
-        this.Data["QA"] = job.QA
-        this.Data["RD"] = job.RD
-        this.Data["Type"] = job.Type
-    }
+	beego.Debug("proj name:", pname)
+	if pname != "" {
+		job, _ := models.GetJob(pname, 0, -1)
+		content = job.Description
+		this.Data["Project"] = job.Name
+		this.Data["QA"] = job.QA
+		this.Data["RD"] = job.RD
+		this.Data["Type"] = job.Type
+	}
 
-    this.Data["Content"] = content
+	this.Data["Content"] = content
 	this.TplNames = "index.tpl"
 }
 
 func (this *MainController) Post() {
+
 }

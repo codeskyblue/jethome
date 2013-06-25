@@ -51,6 +51,7 @@ func AddUser(user User) (err error) {
 		return
 	}
 	exists := false
+	keys, _ := R.Keys("user:*:name")
 	for _, k := range keys {
 		name, _ := R.Get(k)
 		if string(name) == user.Name {
