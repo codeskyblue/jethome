@@ -11,11 +11,11 @@ import (
 	"strings"
 )
 
-var client redis.Client
+var R redis.Client
 
 func init() {
-	client.Addr = "127.0.0.1:6379"
-	client.Db = 0
+	R.Addr = "127.0.0.1:6379"
+	R.Db = 0
 }
 
 type User struct {
@@ -28,6 +28,7 @@ var (
 	ErrorInvalid    = errors.New("Invalid argument")
 	ErrorRepeated   = errors.New("Repeated")
 	ErrorUnexpected = errors.New("Unexpected")
+	ErrorNotExisted = errors.New("Not existed")
 )
 
 func AddUser(user User) (err error) {
@@ -46,14 +47,12 @@ func AddUser(user User) (err error) {
 	}
 	// TODO: finished user data add
 	beego.Debug(string(userdata))
-
-	keys, err := client.Keys("user:*:name")
 	if err != nil {
 		return
 	}
 	exists := false
 	for _, k := range keys {
-		name, _ := client.Get(k)
+		name, _ := R.Get(k)
 		if string(name) == user.Name {
 			exists = true
 			break
@@ -63,18 +62,18 @@ func AddUser(user User) (err error) {
 		beego.Warn("user already registed")
 		return ErrorRepeated
 	}
-	id, err := client.Incr("user:count")
+	id, err := R.Incr("user:count")
 	if err != nil {
 		return
 	}
 	beego.Debug("user id:", id)
-	client.Set(fmt.Sprintf("user:%d:name", id), []byte(user.Name))
-	client.Set(fmt.Sprintf("user:%d:email", id), []byte(user.Email))
+	R.Set(fmt.Sprintf("user:%d:name", id), []byte(user.Name))
+	R.Set(fmt.Sprintf("user:%d:email", id), []byte(user.Email))
 	return
 }
 
 func ListUser() (users []User, err error) {
-	keys, err := client.Keys("user:*:name")
+	keys, err := R.Keys("user:*:name")
 	if err != nil {
 		return
 	}
@@ -88,12 +87,12 @@ func ListUser() (users []User, err error) {
 			continue
 		}
 		user.Id = id
-		name, er := client.Get(k)
+		name, er := R.Get(k)
 		if er != nil {
 			continue
 		}
 		user.Name = string(name)
-		email, er := client.Get(fmt.Sprintf("user:%d:email", id))
+		email, er := R.Get(fmt.Sprintf("user:%d:email", id))
 		if er != nil {
 			continue
 		}
