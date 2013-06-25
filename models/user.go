@@ -79,11 +79,12 @@ func ListUser() (users []User, err error) {
 			continue
 		}
 		user.Name = string(name)
-		email, er := R.Get(fmt.Sprintf("user:%d:email", id))
-		if er != nil {
-			continue
-		}
-		user.Email = string(email)
+        user.Email = redis.MustString(R.Get(fmt.Sprintf("user:%d:email", id)))
+		//email, er := R.Get(fmt.Sprintf("user:%d:email", id))
+		//if er != nil {
+			//continue
+		//}
+		//user.Email = string(email)
 		users = append(users, user)
 	}
 	return users, nil
