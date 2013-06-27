@@ -11,6 +11,7 @@ const (
 	ProjNormal = iota
 	ProjQuick
 	ProjHeavy
+	keyMap = "proj:map"
 )
 
 type Project struct {
@@ -21,6 +22,47 @@ type Project struct {
 	Id          int
 	Type        int
 	Description string
+}
+
+// get project id, if not exists then create one.
+func ProjID(name string) (id int) {
+	exists, _ := R.Hexists(keyMap, name)
+	if exists {
+		id = redis.MustInt(R.Hget(keyMap, name))
+		return
+	}
+	id64, _ := R.Incr("proj:count")
+	id = int(id64)
+	return
+}
+
+// save project to db
+func (pj *Project) Save() (err error) {
+	if pj.Name == "" {
+		beego.Warn("project name is empty")
+		return ErrorInvalid
+	}
+	id := ProjID(pj.Name)
+	pj.Id = id
+	_, err = R.Hset(keyMap, pj.Name, []byte(strconv.Itoa(pj.Id)))
+	if err != nil {
+		return
+	}
+
+	beego.Debug("project id:", id)
+
+	data, _ := json.Marshal(*pj)
+	err = R.Set("proj:info:"+strconv.Itoa(id), data) // store as json encode data
+	return
+}
+
+func Names() (names []string) {
+	names, err := R.Hkeys(keyMap)
+	if err != nil {
+		beego.Error("get names error from redis")
+		return []string{}
+	}
+	return
 }
 
 func names() (ret map[string]string) {
@@ -44,34 +86,6 @@ func name2id(name string) (id string) {
 		}
 	}
 	return ""
-}
-
-func ProjID(name string) (id int) {
-	key := "proj:name:" + name
-	exists, _ := R.Exists(key)
-	if exists {
-		id = redis.MustInt(R.Get(key))
-		return
-	}
-	id64, _ := R.Incr("proj:count")
-	id = int(id64)
-	return
-}
-
-func (pj *Project) Save() (err error) {
-	if pj.Name == "" {
-		beego.Warn("project name is empty")
-		return ErrorInvalid
-	}
-	id := ProjID(pj.Name)
-	pj.Id = id
-
-	beego.Debug("project id:", id)
-
-	data, _ := json.Marshal(*pj)
-	R.Set("proj:info:"+strconv.Itoa(id), data) // store as json encode data
-
-	return
 }
 
 func b2str(b []byte, err error) string {

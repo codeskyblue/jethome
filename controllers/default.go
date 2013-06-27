@@ -45,22 +45,30 @@ var about = `
 author: ssx205@gmail.com
 `
 
-func (this *MainController) Get() {
-	name, pname := this.Ctx.Params[":name"], this.Ctx.Params[":pname"]
-	cruproj, _ := models.GetJob(pname, 0, -1)
-	this.Data["CruProj"] = cruproj
-	projlist, _ := models.ListProject()
-	pm := make([]map[string]interface{}, len(projlist))
-	for _, p := range projlist {
+// return data for html use
+func NameList(cur string) []map[string]interface{} {
+	ps := models.Names() // projects
+	beego.Info("count projs:", len(ps))
+	pm := make([]map[string]interface{}, 0, len(ps))
+	for _, projname := range ps {
 		m := make(map[string]interface{}, 2)
-		m["PROJ"] = p
-		if pname == p.Name {
+		m["Name"] = projname
+		if cur == projname {
 			m["Cru"] = true
 		} else {
 			m["Cru"] = false
 		}
 		pm = append(pm, m)
 	}
+	return pm
+}
+
+func (this *MainController) Get() {
+	name, pname := this.Ctx.Params[":name"], this.Ctx.Params[":pname"]
+	cruproj, _ := models.GetJob(pname, 0, -1)
+	this.Data["CruProj"] = cruproj
+
+	pm := NameList(pname)
 	this.Data["ProjList"] = pm
 
 	content := main

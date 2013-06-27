@@ -3,8 +3,8 @@ package controllers
 
 import (
 	"github.com/astaxie/beego"
-
-//	"jethome/models"
+	"jethome/models"
+	"strings"
 )
 
 type AdminController struct {
@@ -12,20 +12,21 @@ type AdminController struct {
 }
 
 func (this *AdminController) Get() {
-
+	pm := NameList("")
+	this.Data["ProjList"] = pm
 	content := ""
 	this.Data["Admin"] = true
 	this.Data["Content"] = content
 	this.TplNames = "index.tpl"
 }
 
-// TODO: finish post request
 func (this *AdminController) Post() {
-	name := this.GetString("name")
-	qa := this.GetString("qa")
-	rd := this.GetString("rd")
-	desc := this.GetString("description")
-	beego.Debug(name, qa, rd, desc)
-	this.Data["Content"] = name
-	this.TplNames = "index.tpl"
+	var p = models.Project{
+		Name:        this.GetString("name"),
+		QA:          strings.Fields(this.GetString("qa")),
+		RD:          strings.Fields(this.GetString("rd")),
+		Description: this.GetString("description"),
+	}
+	p.Save()
+	this.Ctx.Redirect(302, "/")
 }

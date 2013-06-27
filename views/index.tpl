@@ -62,12 +62,18 @@
           <div class="well sidebar-nav">
             <ul class="nav nav-list">
               <li class="nav-header">项目列表</li>
-			{{range .ProjList}}
-                {{if .Cru}}
-				   <li class="active"><a href="/p/{{.PROJ.Name}}">{{.PROJ.Name}}</a></li>
-                {{else}}
-				   <li><a href="/p/{{.PROJ.Name}}">{{.PROJ.Name}}</a></li>
-                {{end}}
+			{{if .Admin}}
+				{{range .ProjList}}
+			   	<li {{if .Cru}}class="active"{{end}}>
+					<a href="/admin/p/{{.Name}}">{{.Name}}</a>
+				</li>
+				{{end}}
+			{{else}}
+				{{range .ProjList}}
+			   	<li {{if .Cru}}class="active"{{end}}>
+					<a href="/p/{{.Name}}">{{.Name}}</a>
+				</li>
+				{{end}}
 			{{end}}
             </ul>
           </div><!--/.well -->
