@@ -2,11 +2,11 @@
 package models
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/astaxie/beego"
 	"github.com/shxsun/redis"
-	//"github.com/garyburd/redigo/redis"
 	"strconv"
 	"strings"
 )
@@ -24,20 +24,34 @@ type User struct {
 	Email string
 }
 
-var ErrorInvalid = errors.New("Invalid argument")
-var ErrorRepeated = errors.New("Repeated")
-var ErrorNotExisted = errors.New("Not existed")
+var (
+	ErrorInvalid    = errors.New("Invalid argument")
+	ErrorRepeated   = errors.New("Repeated")
+	ErrorUnexpected = errors.New("Unexpected")
+	ErrorNotExisted = errors.New("Not existed")
+)
 
 func AddUser(user User) (err error) {
 	if user.Name == "" {
 		beego.Warn("user name in models add is empty")
 		return ErrorInvalid
 	}
-	keys, err := R.Keys("user:*:name")
+	if user.Email == "" {
+		beego.Warn("email in add user is empty")
+		return ErrorInvalid
+	}
+	userdata, err := json.Marshal(user)
+	if err != nil {
+		beego.Error("json marshal user error")
+		return ErrorUnexpected
+	}
+	// TODO: finished user data add
+	beego.Debug(string(userdata))
 	if err != nil {
 		return
 	}
 	exists := false
+	keys, _ := R.Keys("user:*:name")
 	for _, k := range keys {
 		name, _ := R.Get(k)
 		if string(name) == user.Name {

@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>PLAT QA周报管理平台</title>
+    <title>PLAT QA周报平台</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="sunshengxiang01">
@@ -47,9 +47,9 @@
           <div class="nav-collapse collapse">            
             <ul class="nav">
               <li class="active"><a href="/">首页</a></li>
+              <li><a href="/admin">项目管理</a></li>
               <li><a href="/report">生成周报</a></li>
               <li><a href="/about">关于我们</a></li>
-              <li><a href="/contact">联系我们</a></li>
             </ul>
           </div><!--/.nav-collapse -->
         </div>
@@ -87,6 +87,49 @@
                 </table>
             {{end}}
             <div> {{markdown .Content}} </div>
+			{{if .Admin}}
+				<h2>添加新项目</h2>
+				<form class="form-horizontal" method="post">
+					<div class="control-group">
+						<label class="control-label">项目名</label>
+						<div class="controls">
+							<input type="text" name="name" placeholder="eg: hermes" />
+						</div>
+					</div>
+					<div class="control-group">
+						<label class="control-label">QA</label>
+						<div class="controls">
+							<input type="text" name="qa" placeholder="qa name" />
+						</div>
+					</div>
+					<div class="control-group">
+						<label class="control-label">RD</label>
+						<div class="controls">
+							<input type="text" name="rd" placeholder="rd name" />
+						</div>
+					</div>
+					<div class="control-group">
+						<label class="control-label">项目类型</label>
+						<div class="controls">
+							<select name="type">
+							<option value="quick">敏捷项目</option>
+							<option value="heavy">重点项目</option>
+							<option value="normal">普通项目</option>
+							</select>	
+						</div>
+					</div>
+					<div class="control-group">
+						<label class="control-label">项目背景</label>
+						<div class="controls">
+							<textarea name="description" class="span8" rows="7" placeholder="项目背景"></textarea>
+						</div>
+					</div>
+					<div class="form-actions">
+						<button type="submit" class="btn btn-primary">添加</button>
+						<button type="button" class="btn">取消</button>
+					</div>
+				</form>
+			{{end}}
           </div>         
         </div><!--/span-->
       </div><!--/row-->
