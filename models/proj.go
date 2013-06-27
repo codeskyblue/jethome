@@ -4,14 +4,18 @@ import "github.com/astaxie/beego"
 import "strings"
 import "strconv"
 import "time"
+import "encoding/json"
+import "github.com/shxsun/redis"
 
 const (
 	ProjNormal = iota
 	ProjQuick
+	ProjHeavy
 )
 
 type Project struct {
-	Name        string
+	Name        string // English name
+	ZhName      string // Chinese name
 	RD          []string
 	QA          []string
 	Id          int
@@ -42,39 +46,31 @@ func name2id(name string) (id string) {
 	return ""
 }
 
+func ProjID(name string) (id int) {
+	key := "proj:name:" + name
+	exists, _ := R.Exists(key)
+	if exists {
+		id = redis.MustInt(R.Get(key))
+		return
+	}
+	id64, _ := R.Incr("proj:count")
+	id = int(id64)
+	return
+}
+
 func (pj *Project) Save() (err error) {
 	if pj.Name == "" {
 		beego.Warn("project name is empty")
 		return ErrorInvalid
 	}
-
-	id := name2id(pj.Name)
-	if id == "" {
-		id64, er := R.Incr("project:count")
-		if er != nil {
-			beego.Error("get new id for project fail")
-			return er
-		}
-		id = strconv.Itoa(int(id64))
-
-		beego.Debug("add new proj name, pid:", pj.Name, id)
-	}
+	id := ProjID(pj.Name)
+	pj.Id = id
 
 	beego.Debug("project id:", id)
 
-	R.Set("project:"+id+":name", []byte(pj.Name))               // Name
-	R.Set("project:"+id+":desc", []byte(pj.Description))        // Desc
-	R.Set("project:"+id+":type", []byte(strconv.Itoa(pj.Type))) // Type
-	rdkey := "project:" + id + ":rd"
-	qakey := "project:" + id + ":qa"
-	R.Del(rdkey)
-	for _, rd := range pj.RD {
-		R.Lpush(rdkey, []byte(rd))
-	}
-	R.Del(qakey)
-	for _, qa := range pj.QA {
-		R.Lpush(qakey, []byte(qa))
-	}
+	data, _ := json.Marshal(*pj)
+	R.Set("proj:info:"+strconv.Itoa(id), data) // store as json encode data
+
 	return
 }
 
